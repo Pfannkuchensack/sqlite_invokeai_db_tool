@@ -1,0 +1,81 @@
+{
+  "name": "sqlite-electron-tool",
+  "version": "1.0.0",
+  "description": "Electron-App zum Abgleich von InvokeAI DB mit Bilddateien",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron --no-sandbox .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "build": "electron-builder --linux",
+    "build-win": "electron-builder --win --x64",
+    "package-win": "electron-packager . InvokeAI-DB-Tool --platform=win32 --arch=x64 --out=dist/win --overwrite"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
+    "@electron-forge/maker-squirrel": "^7.8.1",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
+    "electron": "^28.1.0",
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.2",
+    "fs-extra": "^11.1.1",
+    "image-size": "^2.0.2",
+    "sqlite3": "^5.1.6"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "asar": true
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "InvokeAI_DB_Tool"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin",
+            "linux"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "build": {
+    "appId": "com.invokeai.dbtool",
+    "productName": "InvokeAI DB Tool",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="appTitle">Tool for InvokeAI DB</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1 data-i18n="appTitle">Tool for InvokeAI DB</h1>
+    
+    <div class="language-selector">
+      <label for="language-select" data-i18n="languageLabel">Language:</label>
+      <select id="language-select" onchange="translateUI(this.value)">
+        <option value="en" data-i18n="languageEN">English</option>
+        <option value="de" data-i18n="languageDE">Deutsch</option>
+      </select>
+    </div>
+    
+    <div class="setup-section">
+      <div class="input-group">
+        <label for="db-path" data-i18n="dbLabel">SQLite Datenbank:</label>
+        <div class="input-with-button">
+          <input type="text" id="db-path" readonly>
+          <button id="select-db" data-i18n="selectButton">Auswählen</button>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="output-dir" data-i18n="outputDirLabel">Ausgabeverzeichnis:</label>
+        <div class="input-with-button">
+          <input type="text" id="output-dir" readonly>
+          <button id="select-output" data-i18n="selectButton">Auswählen</button>
+        </div>
+      </div>
+      
+      <!-- Tabellennamen sind fest auf "images" gesetzt -->
+      
+      <!-- Bildspaltenname ist fest auf "image_name" gesetzt -->
+      
+      <button id="sync-button" class="primary-button" disabled data-i18n="syncButton">Datenbank synchronisieren</button>
+    </div>
+    
+    <div class="results-section">
+      <div class="results-container">
+        <!-- Zu löschende Einträge -->
+        <div class="results-panel" id="removed-entries">
+          <h3><span data-i18n="removedEntriesTitle">Zu löschende Einträge</span> <span id="removed-count">(0)</span></h3>
+          <div class="action-buttons">
+            <button id="remove-entries" class="action-button" disabled data-i18n="removeEntriesButton">Einträge löschen</button>
+          </div>
+          <div class="results-list" id="removed-entries-list"></div>
+        </div>
+        
+        <!-- Fehlende DB-Einträge -->
+        <div class="results-panel" id="missing-entries">
+          <h3><span data-i18n="missingEntriesTitle">Fehlende DB-Einträge</span> <span id="missing-entries-count">(0)</span></h3>
+          <div class="action-buttons">
+            <button id="restore-db-entries" class="action-button" disabled data-i18n="restoreDbEntriesButton">DB-Einträge wiederherstellen</button>
+          </div>
+          <div class="results-list" id="missing-entries-list"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="status-bar" data-i18n="ready">Bereit</div>
+  </div>
+  
+  <script src="translations.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
