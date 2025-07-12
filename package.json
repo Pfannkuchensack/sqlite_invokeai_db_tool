@@ -1,6 +1,6 @@
 {
   "name": "sqlite-electron-tool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Electron-App zum Abgleich von InvokeAI DB mit Bilddateien",
   "main": "main.js",
   "scripts": {
