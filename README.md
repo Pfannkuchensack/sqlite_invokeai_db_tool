@@ -1,5 +1,7 @@
 # InvokeAI DB Tool
 
+This project is not affiliated with InvokeAI in any way. 
+
 A tool for managing and analyzing InvokeAI database entries and PNG metadata.
 
 ## Features
