@@ -28,12 +28,13 @@
     "electron-packager": "^17.1.2"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1",
     "commander": "^11.0.0",
+    "electron-squirrel-startup": "^1.0.1",
     "fs-extra": "^11.1.1",
+    "image-size": "^2.0.2",
     "pngjs": "^7.0.0",
-    "sqlite3": "^5.1.6",
-    "image-size": "^2.0.2"
+    "sharp": "^0.34.3",
+    "sqlite3": "^5.1.6"
   },
   "config": {
     "forge": {

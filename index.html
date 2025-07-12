@@ -40,6 +40,7 @@
       <!-- Bildspaltenname ist fest auf "image_name" gesetzt -->
       
       <button id="sync-button" class="primary-button" disabled data-i18n="syncButton">Datenbank synchronisieren</button>
+      <button id="sync-thumbnails-button" class="primary-button" disabled data-i18n="syncThumbnailsButton">Thumbnails synchronisieren</button>
     </div>
     
     <div class="results-section">
@@ -60,6 +61,15 @@
             <button id="restore-db-entries" class="action-button" disabled data-i18n="restoreDbEntriesButton">DB-Einträge wiederherstellen</button>
           </div>
           <div class="results-list" id="missing-entries-list"></div>
+        </div>
+        
+        <!-- Fehlende Thumbnails -->
+        <div class="results-panel" id="missing-thumbnails">
+          <h3><span data-i18n="missingThumbnailsTitle">Fehlende Thumbnails</span> <span id="missing-thumbnails-count">(0)</span></h3>
+          <div class="action-buttons">
+            <button id="restore-thumbnails" class="action-button" disabled data-i18n="restoreThumbnailsButton">Thumbnails wiederherstellen</button>
+          </div>
+          <div class="results-list" id="missing-thumbnails-list"></div>
         </div>
       </div>
     </div>

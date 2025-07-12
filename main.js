@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const sqlite3 = require('sqlite3').verbose();
 const { imageSizeFromFile } = require('image-size/fromFile');
 const PNG = require('pngjs').PNG;
+const sharp = require('sharp');
 
 let mainWindow;
 
@@ -227,6 +228,77 @@ async function getMetadata(filePath) {
       resolve(null);
     }
   });
+}
+
+/**
+ * Prüft, ob ein Thumbnail für ein Bild existiert und erstellt eines, falls nicht
+ * @param {string} imagePath - Pfad zum Originalbild
+ * @param {string} outputDir - Ausgabeverzeichnis, in dem der thumbnails-Ordner erstellt wird
+ * @returns {Promise<boolean>} - true, wenn ein Thumbnail erstellt wurde, false wenn es bereits existierte oder ein Fehler auftrat
+ */
+async function ensureThumbnailExists(imagePath, outputDir) {
+  try {
+    // Extrahiere den Dateinamen aus dem Pfad und entferne die Erweiterung
+    const fileNameWithExt = path.basename(imagePath);
+    const fileName = path.parse(fileNameWithExt).name;
+    
+    // Erstelle den Pfad zum Thumbnails-Ordner
+    const thumbnailDir = path.join(outputDir, 'thumbnails');
+    
+    // Erstelle den Thumbnails-Ordner, falls er nicht existiert
+    await fs.ensureDir(thumbnailDir);
+    
+    // Erstelle den Pfad zum Thumbnail mit WebP-Erweiterung
+    const thumbnailPath = path.join(thumbnailDir, `${fileName}.webp`);
+    
+    // Prüfe, ob das Thumbnail bereits existiert
+    const thumbnailExists = await fs.pathExists(thumbnailPath);
+    
+    // Wenn das Thumbnail nicht existiert, erstelle es
+    if (!thumbnailExists) {
+      console.log(`Erstelle WebP-Thumbnail für ${fileNameWithExt}`);
+      
+      // Verwende sharp, um das Thumbnail zu erstellen
+      // Zuerst die Größe des Originalbildes ermitteln
+      const dimensions = await imageSizeFromFile(imagePath);
+      
+      // Berechne das Seitenverhältnis und die neue Größe
+      let newWidth = dimensions.width;
+      let newHeight = dimensions.height;
+      
+      // Skaliere das Bild herunter, wenn es größer als 256 Pixel in einer Dimension ist
+      if (newWidth > 256 || newHeight > 256) {
+        const aspectRatio = newWidth / newHeight;
+        
+        if (aspectRatio >= 1) {
+          // Breiteres Bild
+          newWidth = 256;
+          newHeight = Math.round(256 / aspectRatio);
+        } else {
+          // Höheres Bild
+          newHeight = 256;
+          newWidth = Math.round(256 * aspectRatio);
+        }
+      }
+      
+      // Erstelle das Thumbnail mit den berechneten Dimensionen als WebP
+      await sharp(imagePath)
+        .resize({
+          width: newWidth,
+          height: newHeight,
+          withoutEnlargement: true // Vergrößert das Bild nicht, wenn es kleiner ist
+        })
+        .webp({ quality: 80 }) // Konvertiere zu WebP mit 80% Qualität
+        .toFile(thumbnailPath);
+      
+      return true; // Thumbnail wurde erstellt
+    }
+    
+    return false; // Thumbnail existierte bereits
+  } catch (error) {
+    console.error(`Fehler beim Erstellen des Thumbnails für ${imagePath}:`, error);
+    return false;
+  }
 }
 
 /**
@@ -660,6 +732,12 @@ ipcMain.handle('restore-db-entries', async (event, { dbPath, outputDir, imageCol
           // Prüfe, ob das Bild Metadaten enthält
           const metadata = await getMetadata(imagePath);
           
+          // Prüfe, ob ein Thumbnail existiert und erstelle eines, falls nicht
+          const thumbnailCreated = await ensureThumbnailExists(imagePath, outputDir);
+          if (thumbnailCreated) {
+            console.log(`Thumbnail für ${entry.fileName} erstellt`);
+          }
+          
           // Erstelle einen neuen Eintrag mit den erforderlichen Feldern
           await new Promise((resolve, reject) => {
             let query, params;
@@ -710,6 +788,102 @@ ipcMain.handle('restore-db-entries', async (event, { dbPath, outputDir, imageCol
     };
   } catch (error) {
     console.error('Fehler beim Wiederherstellen der DB-Einträge:', error);
+    return { error: error.message };
+  }
+});
+
+// Funktion zum Abgleich des Ausgabeverzeichnisses mit dem Thumbnails-Verzeichnis
+ipcMain.handle('sync-thumbnails', async (event, { outputDir }) => {
+  try {
+    if (!outputDir) {
+      return { error: 'Ausgabeverzeichnis nicht angegeben' };
+    }
+    
+    // Prüfe, ob das Thumbnails-Verzeichnis existiert
+    const thumbnailDir = path.join(outputDir, 'thumbnails');
+    const thumbnailDirExists = await fs.pathExists(thumbnailDir);
+    
+    if (!thumbnailDirExists) {
+      // Erstelle das Thumbnails-Verzeichnis, wenn es nicht existiert
+      await fs.ensureDir(thumbnailDir);
+      // Wenn das Verzeichnis nicht existiert, fehlen alle Thumbnails
+      const imageFiles = await fs.readdir(outputDir);
+      const missingThumbnails = imageFiles.filter(file => 
+        /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file) && 
+        !fs.statSync(path.join(outputDir, file)).isDirectory()
+      );
+      
+      return {
+        missingThumbnails: missingThumbnails.map(file => ({
+          fileName: file,
+          imagePath: path.join(outputDir, file)
+        }))
+      };
+    }
+    
+    // Alle Bilddateien im Ausgabeverzeichnis finden
+    const outputFiles = await fs.readdir(outputDir);
+    const imageFiles = outputFiles.filter(file => 
+      /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file) && 
+      !fs.statSync(path.join(outputDir, file)).isDirectory()
+    );
+    
+    // Alle Thumbnails im Thumbnails-Verzeichnis finden
+    const thumbnailFiles = await fs.readdir(thumbnailDir);
+    
+    // Fehlende Thumbnails identifizieren
+    const missingThumbnails = [];
+    for (const imageFile of imageFiles) {
+      // Extrahiere den Dateinamen ohne Erweiterung für den WebP-Vergleich
+      const fileName = path.parse(imageFile).name;
+      const webpFileName = `${fileName}.webp`;
+      
+      // Prüfe, ob das entsprechende WebP-Thumbnail existiert
+      if (!thumbnailFiles.includes(webpFileName)) {
+        missingThumbnails.push({
+          fileName: imageFile,
+          imagePath: path.join(outputDir, imageFile)
+        });
+      }
+    }
+    
+    return { missingThumbnails };
+  } catch (error) {
+    console.error('Fehler beim Abgleich der Thumbnails:', error);
+    return { error: error.message };
+  }
+});
+
+// Funktion zum Wiederherstellen fehlender Thumbnails
+ipcMain.handle('restore-thumbnails', async (event, { outputDir, missingThumbnails }) => {
+  try {
+    if (!missingThumbnails || missingThumbnails.length === 0) {
+      return { success: false, message: 'Keine fehlenden Thumbnails zum Wiederherstellen' };
+    }
+    
+    let restoredCount = 0;
+    let errorCount = 0;
+    
+    // Für jedes fehlende Thumbnail
+    for (const entry of missingThumbnails) {
+      try {
+        // Erstelle das Thumbnail
+        const thumbnailCreated = await ensureThumbnailExists(entry.imagePath, outputDir);
+        if (thumbnailCreated) {
+          restoredCount++;
+        }
+      } catch (error) {
+        console.error(`Fehler beim Erstellen des Thumbnails für ${entry.fileName}:`, error);
+        errorCount++;
+      }
+    }
+    
+    return { 
+      success: true, 
+      message: `${restoredCount} Thumbnails wurden wiederhergestellt. ${errorCount} Fehler aufgetreten.` 
+    };
+  } catch (error) {
+    console.error('Fehler beim Wiederherstellen der Thumbnails:', error);
     return { error: error.message };
   }
 });

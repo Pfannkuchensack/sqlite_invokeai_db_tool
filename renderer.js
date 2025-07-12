@@ -4,7 +4,8 @@ let outputDir = null;
 let syncResults = {
   missingImages: [],
   removedEntries: [],
-  missingEntries: []
+  missingEntries: [],
+  missingThumbnails: []
 };
 let currentLanguage = 'en'; // Standardsprache ist Englisch
 
@@ -14,14 +15,18 @@ const outputDirInput = document.getElementById('output-dir');
 // Tabellennamen sind fest auf "images" gesetzt
 // Bildspaltenname ist fest auf "image_name"
 const syncButton = document.getElementById('sync-button');
+const syncThumbnailsButton = document.getElementById('sync-thumbnails-button');
 const selectDbButton = document.getElementById('select-db');
 const selectOutputButton = document.getElementById('select-output');
 const removeEntriesButton = document.getElementById('remove-entries');
 const restoreDbEntriesButton = document.getElementById('restore-db-entries');
+const restoreThumbnailsButton = document.getElementById('restore-thumbnails');
 const removedEntriesList = document.getElementById('removed-entries-list');
 const missingEntriesList = document.getElementById('missing-entries-list');
+const missingThumbnailsList = document.getElementById('missing-thumbnails-list');
 const removedCount = document.getElementById('removed-count');
 const missingEntriesCount = document.getElementById('missing-entries-count');
+const missingThumbnailsCount = document.getElementById('missing-thumbnails-count');
 const statusBar = document.getElementById('status-bar');
 const languageSelect = document.getElementById('language-select');
 
@@ -203,9 +208,74 @@ restoreDbEntriesButton.addEventListener('click', async () => {
   }
 });
 
+// Event-Handler für Thumbnail-Synchronisierungsbutton
+syncThumbnailsButton.addEventListener('click', async () => {
+  try {
+    setStatus(window.translations[currentLanguage].syncingThumbnails);
+    
+    // Thumbnail-Synchronisierung starten
+    const thumbnailSyncResults = await window.electronAPI.syncThumbnails({
+      outputDir
+    });
+    
+    if (thumbnailSyncResults.error) {
+      setStatus(`${thumbnailSyncResults.error}`, true);
+      return;
+    }
+    
+    // Ergebnisse speichern und anzeigen
+    syncResults.missingThumbnails = thumbnailSyncResults.missingThumbnails || [];
+    displaySyncResults();
+    setStatus(window.translations[currentLanguage].syncCompleted);
+    
+  } catch (error) {
+    setStatus(`${error.message}`, true);
+  }
+});
+
+// Event-Handler für "Thumbnails wiederherstellen"-Button
+restoreThumbnailsButton.addEventListener('click', async () => {
+  try {
+    if (!syncResults.missingThumbnails || syncResults.missingThumbnails.length === 0) {
+      setStatus(window.translations[currentLanguage].noThumbnailsToRestore, true);
+      return;
+    }
+    
+    // Bestätigung einholen
+    const confirmMessage = translations[currentLanguage].confirmRestoreThumbnails
+      .replace('{count}', syncResults.missingThumbnails.length);
+    
+    const confirmRestore = confirm(confirmMessage);
+    if (!confirmRestore) {
+      return;
+    }
+    
+    setStatus(translations[currentLanguage].restoringThumbnails);
+    
+    const result = await window.electronAPI.restoreThumbnails({
+      outputDir,
+      missingThumbnails: syncResults.missingThumbnails
+    });
+    
+    if (result.error) {
+      setStatus(`${result.error}`, true);
+      return;
+    }
+    
+    setStatus(result.message);
+    
+    // Nach erfolgreicher Wiederherstellung erneut synchronisieren
+    syncThumbnailsButton.click();
+    
+  } catch (error) {
+    setStatus(`${error.message}`, true);
+  }
+});
+
 // Hilfsfunktion zum Aktualisieren des Synchronisierungsbutton-Status
 function updateSyncButtonState() {
   syncButton.disabled = !dbPath || !outputDir;
+  syncThumbnailsButton.disabled = !outputDir;
 }
 
 // Hilfsfunktion zum Anzeigen der Synchronisierungsergebnisse
@@ -249,6 +319,28 @@ function displaySyncResults() {
     element.textContent = translations[currentLanguage].noMissingEntries;
     missingEntriesList.appendChild(element);
     restoreDbEntriesButton.disabled = true;
+  }
+  
+  // Fehlende Thumbnails anzeigen
+  missingThumbnailsList.innerHTML = '';
+  missingThumbnailsCount.textContent = `(${syncResults.missingThumbnails ? syncResults.missingThumbnails.length : 0})`;
+  
+  if (syncResults.missingThumbnails && syncResults.missingThumbnails.length > 0) {
+    syncResults.missingThumbnails.forEach(item => {
+      const element = document.createElement('div');
+      element.className = 'result-item';
+      let resultText = translations[currentLanguage].missingEntryFormat;
+      resultText = resultText.replace('{fileName}', item.fileName);
+      element.textContent = resultText;
+      missingThumbnailsList.appendChild(element);
+    });
+    restoreThumbnailsButton.disabled = false;
+  } else {
+    const element = document.createElement('div');
+    element.className = 'result-item';
+    element.textContent = translations[currentLanguage].noMissingThumbnails;
+    missingThumbnailsList.appendChild(element);
+    restoreThumbnailsButton.disabled = true;
   }
 }
 

@@ -10,6 +10,7 @@ const translationsjs = {
     outputDirLabel: 'Output Verzeichnis:',
     selectButton: 'Auswählen',
     syncButton: 'InvokeAI DB synchronisieren',
+    syncThumbnailsButton: 'Thumbnails synchronisieren',
     
     // Tabs
     missingImagesTab: 'Fehlende Bilder',
@@ -20,12 +21,15 @@ const translationsjs = {
     missingImagesTitle: 'Fehlende Bilder',
     removedEntriesTitle: 'Zu löschende Einträge',
     missingEntriesTitle: 'Fehlende DB-Einträge',
+    missingThumbnailsTitle: 'Fehlende Thumbnails',
     restoreImagesButton: 'Bilder wiederherstellen',
     removeEntriesButton: 'Einträge löschen',
     restoreDbEntriesButton: 'DB-Einträge wiederherstellen',
+    restoreThumbnailsButton: 'Thumbnails wiederherstellen',
     noMissingImages: 'Keine fehlenden Bilder gefunden.',
     noRemovedEntries: 'Keine zu löschenden Einträge gefunden.',
     noMissingEntries: 'Keine fehlenden DB-Einträge gefunden.',
+    noMissingThumbnails: 'Keine fehlenden Thumbnails gefunden.',
     resultItemFormat: 'Tabelle: {table}, ID: {rowId}, Bild: {imagePath}',
     missingEntryFormat: 'Datei: {fileName}',
     confirmRestoreEntries: 'Möchten Sie wirklich {count} DB-Einträge wiederherstellen?',
@@ -43,6 +47,10 @@ const translationsjs = {
     confirmDelete: 'Möchten Sie wirklich {count} Einträge aus der Datenbank löschen?',
     restoringDbEntries: 'Stelle fehlende DB-Einträge wieder her...',
     noDbEntriesToRestore: 'Keine fehlenden DB-Einträge zum Wiederherstellen.',
+    syncingThumbnails: 'Synchronisiere Thumbnails mit Ausgabeverzeichnis...',
+    restoringThumbnails: 'Stelle fehlende Thumbnails wieder her...',
+    noThumbnailsToRestore: 'Keine fehlenden Thumbnails zum Wiederherstellen.',
+    confirmRestoreThumbnails: 'Möchten Sie wirklich {count} fehlende Thumbnails wiederherstellen?',
     
     // Sprachauswahl
     languageLabel: 'Sprache:',
@@ -59,6 +67,7 @@ const translationsjs = {
     outputDirLabel: 'Output Directory:',
     selectButton: 'Select',
     syncButton: 'Synchronize InvokeAI DB',
+    syncThumbnailsButton: 'Synchronize Thumbnails',
     
     // Tabs
     missingImagesTab: 'Missing Images',
@@ -69,12 +78,15 @@ const translationsjs = {
     missingImagesTitle: 'Missing Images',
     removedEntriesTitle: 'Entries to Delete',
     missingEntriesTitle: 'Missing DB Entries',
+    missingThumbnailsTitle: 'Missing Thumbnails',
     restoreImagesButton: 'Restore Images',
     removeEntriesButton: 'Delete Entries',
     restoreDbEntriesButton: 'Restore DB Entries',
+    restoreThumbnailsButton: 'Restore Thumbnails',
     noMissingImages: 'No missing images found.',
     noRemovedEntries: 'No entries to delete found.',
     noMissingEntries: 'No missing DB entries found.',
+    noMissingThumbnails: 'No missing thumbnails found.',
     resultItemFormat: 'Table: {table}, ID: {rowId}, Image: {imagePath}',
     missingEntryFormat: 'File: {fileName}',
     confirmRestoreEntries: 'Do you really want to restore {count} DB entries?',
@@ -92,6 +104,10 @@ const translationsjs = {
     confirmDelete: 'Do you really want to delete {count} entries from the database?',
     restoringDbEntries: 'Restoring missing DB entries...',
     noDbEntriesToRestore: 'No missing DB entries to restore.',
+    syncingThumbnails: 'Synchronizing thumbnails with output directory...',
+    restoringThumbnails: 'Restoring missing thumbnails...',
+    noThumbnailsToRestore: 'No missing thumbnails to restore.',
+    confirmRestoreThumbnails: 'Do you really want to restore {count} missing thumbnails?',
     
     // Language selection
     languageLabel: 'Language:',
