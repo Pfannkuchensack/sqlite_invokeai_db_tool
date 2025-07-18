@@ -12,6 +12,7 @@ A tool for managing and analyzing InvokeAI database entries and PNG metadata.
 - **Cleanup**: Remove database entries for non-existent images
 - **Metadata Extraction**: Automatic extraction and storage of InvokeAI metadata
 - **Workflow Detection**: Identification and flagging of images with workflow information
+- **Model Path Management**: Management of model paths in the database
 
 ### PNG Metadata Analysis
 - **Inspection**: Detailed analysis of PNG metadata, including InvokeAI-specific chunks
