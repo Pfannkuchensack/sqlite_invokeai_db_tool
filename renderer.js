@@ -7,6 +7,7 @@ let syncResults = {
   missingEntries: [],
   missingThumbnails: []
 };
+let modelsData = [];
 let currentLanguage = 'en'; // Standardsprache ist Englisch
 
 // DOM-Elemente
@@ -29,6 +30,18 @@ const missingEntriesCount = document.getElementById('missing-entries-count');
 const missingThumbnailsCount = document.getElementById('missing-thumbnails-count');
 const statusBar = document.getElementById('status-bar');
 const languageSelect = document.getElementById('language-select');
+
+// Model-Management DOM-Elemente
+const loadModelsButton = document.getElementById('load-models-button');
+const updatePathsButton = document.getElementById('update-paths-button');
+const oldPathInput = document.getElementById('old-path');
+const newPathInput = document.getElementById('new-path');
+const modelsList = document.getElementById('models-list');
+const modelsCount = document.getElementById('models-count');
+
+// Feste Werte für Tabelle und Spalte
+const MODELS_TABLE = 'models';
+const PATH_COLUMN = 'path';
 
 // Funktion zum Übersetzen der Benutzeroberfläche
 // Mache die Funktion global verfügbar
@@ -272,10 +285,139 @@ restoreThumbnailsButton.addEventListener('click', async () => {
   }
 });
 
+// Event-Handler für Model-Management
+loadModelsButton.addEventListener('click', async () => {
+  try {
+    if (!dbPath) {
+      setStatus(window.translations[currentLanguage].noDbSelected || 'Bitte wählen Sie zuerst eine Datenbank aus.', true);
+      return;
+    }
+    
+    setStatus(window.translations[currentLanguage].loadingModels);
+    
+    const result = await window.electronAPI.loadModels({
+      dbPath: dbPath,
+    });
+    
+    if (result.success) {
+      modelsData = result.models;
+      displayModels();
+      setStatus(`${result.models.length} Models geladen.`);
+    } else {
+      setStatus(result.message, true);
+    }
+    
+  } catch (error) {
+    setStatus(`Fehler beim Laden der Models: ${error.message}`, true);
+  }
+});
+
+updatePathsButton.addEventListener('click', async () => {
+  try {
+    if (!dbPath) {
+      setStatus(window.translations[currentLanguage].noDbSelected || 'Bitte wählen Sie zuerst eine Datenbank aus.', true);
+      return;
+    }
+    
+    const oldPath = oldPathInput.value.trim();
+    const newPath = newPathInput.value.trim();
+    
+    if (!oldPath) {
+      setStatus(window.translations[currentLanguage].oldPathRequired, true);
+      return;
+    }
+    
+    if (!newPath) {
+      setStatus(window.translations[currentLanguage].newPathRequired, true);
+      return;
+    }
+    
+    // Zähle wie viele Pfade betroffen wären
+    const affectedModels = modelsData.filter(model => 
+      model.path && model.path.includes(oldPath)
+    );
+    
+    if (affectedModels.length === 0) {
+      setStatus(window.translations[currentLanguage].noPathsToUpdate, true);
+      return;
+    }
+    
+    // Bestätigung anfordern
+    const confirmMessage = window.translations[currentLanguage].confirmUpdatePaths
+      .replace('{count}', affectedModels.length);
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    setStatus(window.translations[currentLanguage].updatingPaths);
+    
+    const result = await window.electronAPI.updateModelPaths({
+      dbPath: dbPath,
+      oldPath: oldPath,
+      newPath: newPath
+    });
+    
+    if (result.success) {
+      setStatus(window.translations[currentLanguage].pathsUpdated + ` (${result.updatedCount} Pfade aktualisiert)`);
+      // Models neu laden um aktualisierte Pfade anzuzeigen
+      loadModelsButton.click();
+    } else {
+      setStatus(result.message, true);
+    }
+    
+  } catch (error) {
+    setStatus(`Fehler beim Aktualisieren der Pfade: ${error.message}`, true);
+  }
+});
+
+// Hilfsfunktion zum Anzeigen der Models
+function displayModels() {
+  if (!modelsData || modelsData.length === 0) {
+    modelsList.innerHTML = '<div class="result-item">Keine Models gefunden.</div>';
+    modelsCount.textContent = '(0)';
+    updatePathsButton.disabled = true;
+    return;
+  }
+  
+  modelsList.innerHTML = '';
+  modelsCount.textContent = `(${modelsData.length})`;
+  updatePathsButton.disabled = false;
+  
+  modelsData.forEach((model, index) => {
+    const modelItem = document.createElement('div');
+    modelItem.className = 'model-item';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'model-checkbox';
+    checkbox.id = `model-${index}`;
+    checkbox.checked = true;
+    
+    const label = document.createElement('label');
+    label.className = 'model-label';
+    label.htmlFor = `model-${index}`;
+    
+    const modelInfo = document.createElement('div');
+    modelInfo.className = 'model-info';
+    modelInfo.innerHTML = `
+      <strong>${model.name || 'Unbenannt'}</strong><br>
+      <span>Typ: ${model.type || 'Unbekannt'}</span><br>
+      <span>Pfad: ${model.path || 'Kein Pfad'}</span>
+    `;
+    
+    label.appendChild(modelInfo);
+    modelItem.appendChild(checkbox);
+    modelItem.appendChild(label);
+    modelsList.appendChild(modelItem);
+  });
+}
+
 // Hilfsfunktion zum Aktualisieren des Synchronisierungsbutton-Status
 function updateSyncButtonState() {
   syncButton.disabled = !dbPath || !outputDir;
-  syncThumbnailsButton.disabled = !outputDir;
+  syncThumbnailsButton.disabled = !dbPath || !outputDir;
+  loadModelsButton.disabled = !dbPath;
 }
 
 // Hilfsfunktion zum Anzeigen der Synchronisierungsergebnisse
@@ -348,6 +490,50 @@ function displaySyncResults() {
 function setStatus(message, isError = false) {
   statusBar.textContent = message;
   statusBar.style.backgroundColor = isError ? '#e74c3c' : '#2c3e50';
+}
+
+// Hilfsfunktion zum Anzeigen der Models
+function displayModels() {
+  if (!modelsData || modelsData.length === 0) {
+    modelsList.innerHTML = '<div class="result-item">Keine Models gefunden.</div>';
+    modelsCount.textContent = '(0)';
+    updatePathsButton.disabled = true;
+    return;
+  }
+  
+  modelsCount.textContent = `(${modelsData.length})`;
+  updatePathsButton.disabled = false;
+  
+  modelsList.innerHTML = '';
+  
+  modelsData.forEach((model, index) => {
+    const modelItem = document.createElement('div');
+    modelItem.className = 'result-item model-item';
+    
+    // Erstelle Checkbox für Auswahl
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = `model-${index}`;
+    checkbox.className = 'model-checkbox';
+    
+    const label = document.createElement('label');
+    label.htmlFor = `model-${index}`;
+    label.className = 'model-label';
+    
+    // Zeige ID und Pfad
+    const modelInfo = document.createElement('div');
+    modelInfo.className = 'model-info';
+    modelInfo.innerHTML = `
+      <strong>ID:</strong> ${model.id || 'N/A'}<br>
+      <strong>Pfad:</strong> ${model.path || 'N/A'}
+    `;
+    
+    label.appendChild(modelInfo);
+    modelItem.appendChild(checkbox);
+    modelItem.appendChild(label);
+    
+    modelsList.appendChild(modelItem);
+  });
 }
 
 // Hilfsfunktion zum Formatieren eines Ergebniseintrags

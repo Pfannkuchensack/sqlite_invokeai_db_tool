@@ -9,7 +9,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeEntries: (params) => ipcRenderer.invoke('remove-entries', params),
   restoreDbEntries: (params) => ipcRenderer.invoke('restore-db-entries', params),
   syncThumbnails: (params) => ipcRenderer.invoke('sync-thumbnails', params),
-  restoreThumbnails: (params) => ipcRenderer.invoke('restore-thumbnails', params)
+  restoreThumbnails: (params) => ipcRenderer.invoke('restore-thumbnails', params),
+  loadModels: (params) => ipcRenderer.invoke('load-models', params),
+  updateModelPaths: (params) => ipcRenderer.invoke('update-model-paths', params)
 });
 
 // Stelle die Übersetzungen im Renderer-Prozess zur Verfügung

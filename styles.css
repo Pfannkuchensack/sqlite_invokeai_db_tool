@@ -43,7 +43,7 @@ h1 {
   cursor: pointer;
 }
 
-.setup-section, .results-section {
+.setup-section, .results-section, .model-management-section, .models-results-section {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -172,6 +172,82 @@ button:disabled {
 
 .action-button:hover {
   background-color: #c0392b;
+}
+
+/* Model-Management spezifische Styles */
+.model-path-actions {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.model-path-actions button {
+  flex: 1;
+}
+
+.path-replacement-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.replacement-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .replacement-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.models-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.model-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.model-item:hover {
+  background-color: #f8f9fa;
+}
+
+.model-item:last-child {
+  border-bottom: none;
+}
+
+.model-checkbox {
+  margin-top: 5px;
+  cursor: pointer;
+}
+
+.model-label {
+  cursor: pointer;
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.model-info {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.model-info strong {
+  color: #2c3e50;
 }
 
 #status-bar {

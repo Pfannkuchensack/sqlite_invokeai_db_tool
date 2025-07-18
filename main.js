@@ -929,3 +929,137 @@ ipcMain.handle('remove-entries', async (event, { dbPath, removedEntries }) => {
     return { error: error.message };
   }
 });
+
+// IPC-Handler für das Laden von Models
+ipcMain.handle('load-models', async (event, { dbPath}) => {
+  try {
+    const db = new sqlite3.Database(dbPath);
+    
+    return new Promise((resolve, reject) => {
+      // Lade alle Models mit ihrer config (die den Pfad als JSON enthält)
+      db.all(`SELECT rowid as id, name, type, config FROM models WHERE config IS NOT NULL`, (err, rows) => {
+        db.close();
+        
+        if (err) {
+          resolve({ success: false, message: `Fehler beim Laden der Models: ${err.message}` });
+          return;
+        }
+        
+        const models = [];
+        
+        for (const row of rows) {
+          try {
+            // Parse die JSON config um den Pfad zu extrahieren
+            const config = JSON.parse(row.config);
+            const path = config.path || null;
+            
+            // Nur Models mit Pfad hinzufügen
+            if (path) {
+              models.push({
+                id: row.id,
+                name: row.name,
+                type: row.type,
+                path: path,
+                config: config
+              });
+            }
+          } catch (jsonErr) {
+            console.warn(`Fehler beim Parsen der config für Model ID ${row.id}:`, jsonErr);
+            // Model ohne Pfad hinzufügen
+            models.push({
+              id: row.id,
+              name: row.name,
+              type: row.type,
+              path: 'Fehler beim Lesen der Config',
+              config: null
+            });
+          }
+        }
+        
+        resolve({ success: true, models: models });
+      });
+    });
+  } catch (error) {
+    console.error('Fehler beim Laden der Models:', error);
+    return { success: false, message: error.message };
+  }
+});
+
+// IPC-Handler für das Aktualisieren von Model-Pfaden
+ipcMain.handle('update-model-paths', async (event, { dbPath, oldPath, newPath }) => {
+  try {
+    const db = new sqlite3.Database(dbPath);
+    
+    return new Promise((resolve, reject) => {
+      // Lade alle Models mit config um zu prüfen welche betroffen sind
+      db.all(`SELECT rowid as id, config FROM models WHERE config IS NOT NULL`, (err, rows) => {
+        if (err) {
+          db.close();
+          resolve({ success: false, message: `Fehler beim Laden der Models: ${err.message}` });
+          return;
+        }
+        
+        const modelsToUpdate = [];
+        
+        // Prüfe welche Models den alten Pfad enthalten
+        for (const row of rows) {
+          try {
+            const config = JSON.parse(row.config);
+            if (config.path && config.path.includes(oldPath)) {
+              const newConfig = { ...config };
+              newConfig.path = config.path.replace(new RegExp(oldPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newPath);
+              modelsToUpdate.push({
+                id: row.id,
+                newConfig: JSON.stringify(newConfig)
+              });
+            }
+          } catch (jsonErr) {
+            console.warn(`Fehler beim Parsen der config für Model ID ${row.id}:`, jsonErr);
+          }
+        }
+        
+        if (modelsToUpdate.length === 0) {
+          db.close();
+          resolve({ success: false, message: 'Keine Pfade gefunden, die dem alten Pfad entsprechen.' });
+          return;
+        }
+        
+        // Führe die Updates durch
+        let updatedCount = 0;
+        let completedUpdates = 0;
+        
+        const updateModel = (modelData) => {
+          db.run(
+            `UPDATE models SET config = ? WHERE rowid = ?`,
+            [modelData.newConfig, modelData.id],
+            function(err) {
+              if (err) {
+                console.error(`Fehler beim Aktualisieren von Model ID ${modelData.id}:`, err);
+              } else {
+                updatedCount += this.changes;
+              }
+              
+              completedUpdates++;
+              
+              // Wenn alle Updates abgeschlossen sind
+              if (completedUpdates === modelsToUpdate.length) {
+                db.close();
+                resolve({ 
+                  success: true, 
+                  message: `${updatedCount} Model-Pfade wurden erfolgreich aktualisiert.`,
+                  updatedCount: updatedCount
+                });
+              }
+            }
+          );
+        };
+        
+        // Starte alle Updates
+        modelsToUpdate.forEach(updateModel);
+      });
+    });
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren der Model-Pfade:', error);
+    return { success: false, message: error.message };
+  }
+});

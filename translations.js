@@ -52,6 +52,23 @@ const translationsjs = {
     noThumbnailsToRestore: 'Keine fehlenden Thumbnails zum Wiederherstellen.',
     confirmRestoreThumbnails: 'Möchten Sie wirklich {count} fehlende Thumbnails wiederherstellen?',
     
+    // Model-Pfad-Verwaltung
+    modelManagementTitle: 'Model-Pfad-Verwaltung',
+    loadModelsButton: 'Models laden',
+    updatePathsButton: 'Pfade aktualisieren',
+    pathReplacementTitle: 'Pfad-Ersetzung',
+    oldPathLabel: 'Alter Pfad (oder Teil):',
+    newPathLabel: 'Neuer Pfad (oder Teil):',
+    modelsTitle: 'Models',
+    loadingModels: 'Lade Models...',
+    updatingPaths: 'Aktualisiere Pfade...',
+    noModelsFound: 'Keine Models gefunden.',
+    pathsUpdated: 'Pfade wurden erfolgreich aktualisiert.',
+    noPathsToUpdate: 'Keine Pfade zum Aktualisieren gefunden.',
+    confirmUpdatePaths: 'Möchten Sie wirklich {count} Model-Pfade aktualisieren?',
+    oldPathRequired: 'Bitte geben Sie den alten Pfad ein.',
+    newPathRequired: 'Bitte geben Sie den neuen Pfad ein.',
+    
     // Sprachauswahl
     languageLabel: 'Sprache:',
     languageDE: 'Deutsch',
@@ -108,6 +125,23 @@ const translationsjs = {
     restoringThumbnails: 'Restoring missing thumbnails...',
     noThumbnailsToRestore: 'No missing thumbnails to restore.',
     confirmRestoreThumbnails: 'Do you really want to restore {count} missing thumbnails?',
+    
+    // Model Path Management
+    modelManagementTitle: 'Model Path Management',
+    loadModelsButton: 'Load Models',
+    updatePathsButton: 'Update Paths',
+    pathReplacementTitle: 'Path Replacement',
+    oldPathLabel: 'Old Path (or part):',
+    newPathLabel: 'New Path (or part):',
+    modelsTitle: 'Models',
+    loadingModels: 'Loading models...',
+    updatingPaths: 'Updating paths...',
+    noModelsFound: 'No models found.',
+    pathsUpdated: 'Paths updated successfully.',
+    noPathsToUpdate: 'No paths to update found.',
+    confirmUpdatePaths: 'Do you really want to update {count} model paths?',
+    oldPathRequired: 'Please enter the old path.',
+    newPathRequired: 'Please enter the new path.',
     
     // Language selection
     languageLabel: 'Language:',
