@@ -39,6 +39,10 @@ const newPathInput = document.getElementById('new-path');
 const modelsList = document.getElementById('models-list');
 const modelsCount = document.getElementById('models-count');
 
+// Model-Type-Management DOM-Elemente
+const updateTypesButton = document.getElementById('update-types-button');
+const newTypeInput = document.getElementById('new-type');
+
 // Feste Werte für Tabelle und Spalte
 const MODELS_TABLE = 'models';
 const PATH_COLUMN = 'path';
@@ -371,6 +375,67 @@ updatePathsButton.addEventListener('click', async () => {
   }
 });
 
+// Event-Handler für Model-Type-Update
+updateTypesButton.addEventListener('click', async () => {
+  try {
+    if (!dbPath) {
+      setStatus(window.translations[currentLanguage].noDbSelected || 'Bitte wählen Sie zuerst eine Datenbank aus.', true);
+      return;
+    }
+    
+    const newType = newTypeInput.value.trim();
+    
+    if (!newType) {
+      setStatus(window.translations[currentLanguage].newTypeRequired || 'Bitte geben Sie den neuen Type ein.', true);
+      return;
+    }
+    
+    // Sammle die ausgewählten Model-IDs
+    const selectedModelIds = [];
+    const checkboxes = document.querySelectorAll('.model-checkbox:checked');
+    
+    checkboxes.forEach(checkbox => {
+      const index = parseInt(checkbox.id.replace('model-', ''));
+      if (modelsData[index] && modelsData[index].id) {
+        selectedModelIds.push(modelsData[index].id);
+      }
+    });
+    
+    if (selectedModelIds.length === 0) {
+      setStatus(window.translations[currentLanguage].noModelsSelected || 'Bitte wählen Sie mindestens ein Model aus.', true);
+      return;
+    }
+    
+    // Bestätigungsdialog
+    const confirmMessage = (window.translations[currentLanguage].confirmUpdateTypes || 'Möchten Sie wirklich den config-type von {count} ausgewählten Models zu "{newType}" ändern?')
+      .replace('{count}', selectedModelIds.length)
+      .replace('{newType}', newType);
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    setStatus(window.translations[currentLanguage].updatingTypes || 'Aktualisiere Model-Types...');
+    
+    const result = await window.electronAPI.updateModelTypes({
+      dbPath: dbPath,
+      modelIds: selectedModelIds,
+      newType: newType
+    });
+    
+    if (result.success) {
+      setStatus(window.translations[currentLanguage].typesUpdated + ` (${result.updatedCount} von ${selectedModelIds.length} Models aktualisiert)`);
+      // Models neu laden um aktualisierte Types anzuzeigen
+      loadModelsButton.click();
+    } else {
+      setStatus(result.message, true);
+    }
+    
+  } catch (error) {
+    setStatus(`Fehler beim Aktualisieren der Model-Types: ${error.message}`, true);
+  }
+});
+
 // Hilfsfunktion zum Anzeigen der Models
 function displayModels() {
   if (!modelsData || modelsData.length === 0) {
@@ -400,9 +465,17 @@ function displayModels() {
     
     const modelInfo = document.createElement('div');
     modelInfo.className = 'model-info';
+    
+    // Extrahiere config-Type falls vorhanden
+    let configType = 'Unbekannt';
+    if (model.config && model.config.type) {
+      configType = model.config.type;
+    }
+    
     modelInfo.innerHTML = `
       <strong>${model.name || 'Unbenannt'}</strong><br>
-      <span>Typ: ${model.type || 'Unbekannt'}</span><br>
+      <span>DB-Typ: ${model.type || 'Unbekannt'}</span><br>
+      <span>Config-Typ: ${configType}</span><br>
       <span>Pfad: ${model.path || 'Kein Pfad'}</span>
     `;
     
@@ -418,6 +491,7 @@ function updateSyncButtonState() {
   syncButton.disabled = !dbPath || !outputDir;
   syncThumbnailsButton.disabled = !dbPath || !outputDir;
   loadModelsButton.disabled = !dbPath;
+  updateTypesButton.disabled = !dbPath;
 }
 
 // Hilfsfunktion zum Anzeigen der Synchronisierungsergebnisse

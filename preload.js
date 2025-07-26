@@ -11,7 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   syncThumbnails: (params) => ipcRenderer.invoke('sync-thumbnails', params),
   restoreThumbnails: (params) => ipcRenderer.invoke('restore-thumbnails', params),
   loadModels: (params) => ipcRenderer.invoke('load-models', params),
-  updateModelPaths: (params) => ipcRenderer.invoke('update-model-paths', params)
+  updateModelPaths: (params) => ipcRenderer.invoke('update-model-paths', params),
+  updateModelTypes: (params) => ipcRenderer.invoke('update-model-types', params)
 });
 
 // Stelle die Übersetzungen im Renderer-Prozess zur Verfügung

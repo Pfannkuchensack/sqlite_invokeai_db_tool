@@ -1063,3 +1063,106 @@ ipcMain.handle('update-model-paths', async (event, { dbPath, oldPath, newPath })
     return { success: false, message: error.message };
   }
 });
+
+// IPC-Handler für das Aktualisieren von Model-Types
+ipcMain.handle('update-model-types', async (event, { dbPath, modelIds, newType }) => {
+  try {
+    const db = new sqlite3.Database(dbPath);
+    
+    return new Promise((resolve, reject) => {
+      // Validiere die Eingaben
+      if (!modelIds || !Array.isArray(modelIds) || modelIds.length === 0) {
+        db.close();
+        resolve({ success: false, message: 'Keine Models ausgewählt.' });
+        return;
+      }
+      
+      if (!newType || newType.trim() === '') {
+        db.close();
+        resolve({ success: false, message: 'Neuer Type ist erforderlich.' });
+        return;
+      }
+      
+      // Lade die ausgewählten Models
+      const placeholders = modelIds.map(() => '?').join(',');
+      db.all(`SELECT rowid as id, name, type, config FROM models WHERE rowid IN (${placeholders}) AND config IS NOT NULL`, modelIds, (err, rows) => {
+        if (err) {
+          db.close();
+          resolve({ success: false, message: `Fehler beim Laden der Models: ${err.message}` });
+          return;
+        }
+        
+        const modelsToUpdate = [];
+        
+        // Prüfe jedes ausgewählte Model
+        for (const row of rows) {
+          try {
+            const config = JSON.parse(row.config);
+            modelsToUpdate.push({
+              id: row.id,
+              name: row.name,
+              currentType: row.type,
+              config: config
+            });
+          } catch (jsonErr) {
+            console.warn(`Fehler beim Parsen der config für Model ID ${row.id}:`, jsonErr);
+          }
+        }
+        
+        if (modelsToUpdate.length === 0) {
+          db.close();
+          resolve({ 
+            success: true, 
+            message: 'Keine gültigen Models zum Aktualisieren gefunden.',
+            updatedCount: 0
+          });
+          return;
+        }
+        
+        let updatedCount = 0;
+        let completedUpdates = 0;
+        
+        const updateModel = (model) => {
+          // Aktualisiere den type in der config
+          const updatedConfig = { ...model.config };
+          const oldConfigType = updatedConfig.type || 'unbekannt';
+          updatedConfig.type = newType;
+          
+          const updatedConfigJson = JSON.stringify(updatedConfig);
+          
+          db.run(
+            `UPDATE models SET config = ? WHERE rowid = ?`,
+            [updatedConfigJson, model.id],
+            function(updateErr) {
+              completedUpdates++;
+              
+              if (updateErr) {
+                console.error(`Fehler beim Aktualisieren von Model ${model.name}:`, updateErr);
+              } else {
+                updatedCount++;
+                console.log(`Model "${model.name}" config-type von "${oldConfigType}" zu "${newType}" geändert`);
+              }
+              
+              // Wenn alle Updates abgeschlossen sind
+              if (completedUpdates === modelsToUpdate.length) {
+                db.close();
+                resolve({
+                  success: true,
+                  message: `${updatedCount} von ${modelsToUpdate.length} Models erfolgreich aktualisiert.`,
+                  updatedCount: updatedCount,
+                  totalModels: modelsToUpdate.length
+                });
+              }
+            }
+          );
+        };
+        
+        // Starte alle Updates
+        modelsToUpdate.forEach(updateModel);
+      });
+    });
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren der Model-Types:', error);
+    return { success: false, message: error.message };
+  }
+});

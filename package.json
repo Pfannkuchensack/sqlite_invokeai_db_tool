@@ -1,6 +1,6 @@
 {
   "name": "sqlite-electron-tool",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Electron-App zum Abgleich von InvokeAI DB mit Bilddateien",
   "main": "main.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "png-analyzer": "node png-metadata-analyzer.js"
   },
   "author": "Pfannkuchensack",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@electron-forge/cli": "^7.8.1",
     "@electron-forge/maker-deb": "^7.8.1",

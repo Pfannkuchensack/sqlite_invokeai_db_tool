@@ -69,6 +69,17 @@ const translationsjs = {
     oldPathRequired: 'Bitte geben Sie den alten Pfad ein.',
     newPathRequired: 'Bitte geben Sie den neuen Pfad ein.',
     
+    // Model Type Management
+    modelTypeManagementTitle: 'Model-Type-Verwaltung',
+    updateTypesButton: 'Ausgewählte Types aktualisieren',
+    selectModelsHint: 'Wählen Sie die Models aus, deren config-type geändert werden soll:',
+    newTypeLabel: 'Neuer Type:',
+    updatingTypes: 'Aktualisiere Model-Types...',
+    typesUpdated: 'Model-Types wurden erfolgreich aktualisiert.',
+    noModelsSelected: 'Bitte wählen Sie mindestens ein Model aus.',
+    confirmUpdateTypes: 'Möchten Sie wirklich den config-type von {count} ausgewählten Models zu "{newType}" ändern?',
+    newTypeRequired: 'Bitte geben Sie den neuen Type ein.',
+    
     // Sprachauswahl
     languageLabel: 'Sprache:',
     languageDE: 'Deutsch',
@@ -142,6 +153,17 @@ const translationsjs = {
     confirmUpdatePaths: 'Do you really want to update {count} model paths?',
     oldPathRequired: 'Please enter the old path.',
     newPathRequired: 'Please enter the new path.',
+    
+    // Model Type Management
+    modelTypeManagementTitle: 'Model Type Management',
+    updateTypesButton: 'Update Selected Types',
+    selectModelsHint: 'Select the models whose config-type should be changed:',
+    newTypeLabel: 'New Type:',
+    updatingTypes: 'Updating model types...',
+    typesUpdated: 'Model types updated successfully.',
+    noModelsSelected: 'Please select at least one model.',
+    confirmUpdateTypes: 'Do you really want to change the config-type of {count} selected models to "{newType}"?',
+    newTypeRequired: 'Please enter the new type.',
     
     // Language selection
     languageLabel: 'Language:',
