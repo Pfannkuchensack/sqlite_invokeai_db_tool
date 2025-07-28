@@ -15,11 +15,6 @@ A tool for managing and analyzing InvokeAI database entries and PNG metadata.
 - **Model Path Management**: Management of model paths in the database
 - **Model Type Management**: Management of model types in the database
 
-### PNG Metadata Analysis
-- **Inspection**: Detailed analysis of PNG metadata, including InvokeAI-specific chunks
-- **Filtering**: Identification of final and intermediate images
-- **Comparison**: Direct comparison of metadata between two PNG files
-- **Classification**: Distinction between final images and intermediate steps
 
 ## Installation
 
@@ -60,9 +55,6 @@ npm run make
 3. Choose the output directory where the images are stored
 4. Use the various functions for synchronization and management
 
-### PNG Metadata Analyzer CLI
-
-For detailed information on using the PNG Metadata Analyzer, see [README-PNG-ANALYZER.md](README-PNG-ANALYZER.md).
 
 ## Technical Details
 

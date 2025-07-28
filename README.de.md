@@ -11,11 +11,6 @@ Ein Tool zur Verwaltung und Analyse von InvokeAI-Datenbankeinträgen und PNG-Met
 - **Metadaten-Extraktion**: Automatische Extraktion und Speicherung von InvokeAI-Metadaten
 - **Workflow-Erkennung**: Identifizierung und Kennzeichnung von Bildern mit Workflow-Informationen
 
-### PNG-Metadaten-Analyse
-- **Inspektion**: Detaillierte Analyse von PNG-Metadaten, einschließlich InvokeAI-spezifischer Chunks
-- **Filterung**: Identifikation von finalen und intermediären Bildern
-- **Vergleich**: Direkter Vergleich der Metadaten zweier PNG-Dateien
-- **Klassifizierung**: Unterscheidung zwischen finalen Bildern und Zwischenschritten
 
 ## Installation
 
@@ -56,9 +51,6 @@ npm run make
 3. Wähle das Ausgabeverzeichnis, in dem die Bilder gespeichert sind
 4. Nutze die verschiedenen Funktionen zur Synchronisierung und Verwaltung
 
-### PNG-Metadaten-Analyzer CLI
-
-Für detaillierte Informationen zur Verwendung des PNG-Metadaten-Analyzers siehe [README-PNG-ANALYZER.md](README-PNG-ANALYZER.md).
 
 ## Technische Details
 
